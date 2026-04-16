@@ -1,34 +1,416 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sumify</title>
+    <title>СуммаПрописью — НДС и этапы</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .container {
-            background-color: white;
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
         h1 {
-            color: #ff0000;
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 18px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .result-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .result-box .label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-box .value {
+            font-size: 18px;
+            color: #333;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        .result-box .value.highlight {
+            color: #667eea;
+        }
+
+        .nds-results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stages-container {
+            margin-top: 20px;
+        }
+
+        .stage-row {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stage-row .stage-num {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .stage-row input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .stage-row input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .stage-result {
+            font-size: 14px;
+            color: #333;
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f4e8;
+            border-radius: 6px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5a6fd6;
+        }
+
+        .btn-add {
+            margin-top: 15px;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            font-size: 12px;
+            padding: 5px 10px;
+            margin-left: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        @media (max-width: 600px) {
+            .nds-results {
+                grid-template-columns: 1fr;
+            }
+            .stage-row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to Sumify</h1>
-        <p>Your summarization tool</p>
+        <h1>СуммаПрописью — НДС и этапы</h1>
+
+        <div class="card">
+            <h2>💰 Сумма прописью</h2>
+            <div class="input-group">
+                <label for="amount">Введите сумму (в рублях):</label>
+                <input type="text" id="amount" placeholder="Например: 1234567.89" oninput="calculate()">
+            </div>
+            <div class="result-box">
+                <div class="label">Сумма прописью:</div>
+                <div class="value highlight" id="amountWords">—</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Расчёт НДС (20%)</h2>
+            <div class="nds-results">
+                <div class="result-box">
+                    <div class="label">Сумма без НДС:</div>
+                    <div class="value" id="withoutNds">—</div>
+                    <div class="value highlight" id="withoutNdsWords" style="font-size:14px; margin-top:5px;"></div>
+                </div>
+                <div class="result-box">
+                    <div class="label">НДС (20%):</div>
+                    <div class="value" id="ndsAmount">—</div>
+                    <div class="value highlight" id="ndsAmountWords" style="font-size:14px; margin-top:5px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📋 Разбивка на этапы</h2>
+            <div class="input-group">
+                <label for="stagesCount">Количество этапов:</label>
+                <input type="number" id="stagesCount" value="3" min="1" max="20" onchange="generateStages()">
+            </div>
+            <div id="stagesContainer" class="stages-container"></div>
+            <button class="btn btn-add" onclick="distributeEvenly()">Распределить равномерно</button>
+        </div>
     </div>
+
+    <script>
+        const units = ['', 'один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять'];
+        const unitsF = ['', 'одна', 'две', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять'];
+        const teens = ['десять', 'одиннадцать', 'двенадцать', 'тринадцать', 'четырнадцать', 'пятнадцать', 'шестнадцать', 'семнадцать', 'восемнадцать', 'девятнадцать'];
+        const tens = ['', '', 'двадцать', 'тридцать', 'сорок', 'пятьдесят', 'шестьдесят', 'семьдесят', 'восемьдесят', 'девяносто'];
+        const hundreds = ['', 'сто', 'двести', 'триста', 'четыреста', 'пятьсот', 'шестьсот', 'семьсот', 'восемьсот', 'девятьсот'];
+
+        function getForm(n, forms) {
+            n = Math.abs(n) % 100;
+            if (n > 10 && n < 20) return forms[2];
+            n = n % 10;
+            if (n === 1) return forms[0];
+            if (n > 1 && n < 5) return forms[1];
+            return forms[2];
+        }
+
+        function convertHundreds(num, feminine = false) {
+            let result = '';
+            const u = feminine ? unitsF : units;
+            
+            if (num >= 100) {
+                result += hundreds[Math.floor(num / 100)] + ' ';
+                num %= 100;
+            }
+            
+            if (num >= 10 && num < 20) {
+                result += teens[num - 10] + ' ';
+                return result;
+            }
+            
+            if (num >= 20) {
+                result += tens[Math.floor(num / 10)] + ' ';
+                num %= 10;
+            }
+            
+            if (num > 0) {
+                result += u[num] + ' ';
+            }
+            
+            return result;
+        }
+
+        function numberToWords(num) {
+            if (num === 0) return 'ноль';
+            
+            let result = '';
+            
+            // Миллиарды
+            if (num >= 1000000000) {
+                const billions = Math.floor(num / 1000000000);
+                result += convertHundreds(billions, false) + getForm(billions, ['миллиард', 'миллиарда', 'миллиардов']) + ' ';
+                num %= 1000000000;
+            }
+            
+            // Миллионы
+            if (num >= 1000000) {
+                const millions = Math.floor(num / 1000000);
+                result += convertHundreds(millions, false) + getForm(millions, ['миллион', 'миллиона', 'миллионов']) + ' ';
+                num %= 1000000;
+            }
+            
+            // Тысячи
+            if (num >= 1000) {
+                const thousands = Math.floor(num / 1000);
+                result += convertHundreds(thousands, true) + getForm(thousands, ['тысяча', 'тысячи', 'тысяч']) + ' ';
+                num %= 1000;
+            }
+            
+            // Сотни, десятки, единицы
+            if (num > 0) {
+                result += convertHundreds(num, false);
+            }
+            
+            return result.trim();
+        }
+
+        function amountToWords(amount) {
+            const parts = amount.toFixed(2).split('.');
+            const rubles = parseInt(parts[0]);
+            const kopecks = parseInt(parts[1]);
+            
+            let result = numberToWords(rubles) + ' ' + getForm(rubles, ['рубль', 'рубля', 'рублей']);
+            
+            if (kopecks > 0) {
+                result += ' ' + numberToWords(kopecks) + ' ' + getForm(kopecks, ['копейка', 'копейки', 'копеек']);
+            } else {
+                result += ' 00 копеек';
+            }
+            
+            return result.charAt(0).toUpperCase() + result.slice(1);
+        }
+
+        function formatNumber(num) {
+            return num.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function parseAmount(str) {
+            return parseFloat(str.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        }
+
+        function calculate() {
+            const input = document.getElementById('amount').value;
+            const amount = parseAmount(input);
+            
+            if (amount > 0) {
+                document.getElementById('amountWords').textContent = amountToWords(amount);
+                
+                const withoutNds = amount / 1.2;
+                const nds = amount - withoutNds;
+                
+                document.getElementById('withoutNds').textContent = formatNumber(withoutNds) + ' ₽';
+                document.getElementById('withoutNdsWords').textContent = amountToWords(withoutNds);
+                
+                document.getElementById('ndsAmount').textContent = formatNumber(nds) + ' ₽';
+                document.getElementById('ndsAmountWords').textContent = amountToWords(nds);
+            } else {
+                document.getElementById('amountWords').textContent = '—';
+                document.getElementById('withoutNds').textContent = '—';
+                document.getElementById('withoutNdsWords').textContent = '';
+                document.getElementById('ndsAmount').textContent = '—';
+                document.getElementById('ndsAmountWords').textContent = '';
+            }
+            
+            updateStages();
+        }
+
+        function generateStages() {
+            const count = parseInt(document.getElementById('stagesCount').value) || 3;
+            const container = document.getElementById('stagesContainer');
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= count; i++) {
+                const row = document.createElement('div');
+                row.className = 'stage-row';
+                row.innerHTML = `
+                    <div class="stage-num">${i}</div>
+                    <input type="text" placeholder="Процент (%)" class="stage-percent" oninput="updateStages()">
+                    <input type="text" placeholder="Сумма" class="stage-amount" readonly>
+                    <div class="stage-result"></div>
+                `;
+                container.appendChild(row);
+            }
+        }
+
+        function updateStages() {
+            const amount = parseAmount(document.getElementById('amount').value);
+            const stages = document.querySelectorAll('.stage-row');
+            
+            stages.forEach(stage => {
+                const percentInput = stage.querySelector('.stage-percent');
+                const amountInput = stage.querySelector('.stage-amount');
+                const result = stage.querySelector('.stage-result');
+                
+                const percent = parseFloat(percentInput.value) || 0;
+                const stageAmount = amount * percent / 100;
+                
+                if (stageAmount > 0) {
+                    amountInput.value = formatNumber(stageAmount) + ' ₽';
+                    result.textContent = amountToWords(stageAmount);
+                } else {
+                    amountInput.value = '';
+                    result.textContent = '';
+                }
+            });
+        }
+
+        function distributeEvenly() {
+            const stages = document.querySelectorAll('.stage-row');
+            const percent = (100 / stages.length).toFixed(2);
+            
+            stages.forEach(stage => {
+                stage.querySelector('.stage-percent').value = percent;
+            });
+            
+            updateStages();
+        }
+
+        // Инициализация
+        generateStages();
+    </script>
 </body>
 </html>
